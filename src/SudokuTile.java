@@ -40,11 +40,13 @@ public class SudokuTile {
     }
 
     public void intersectList(ArrayList<Integer> nums) {
+        ArrayList<Integer> new_possibles = new ArrayList<>();
         for(Integer num : nums) {
-            if(!possible_vals.contains(num)) {
-                possible_vals.remove(Integer.valueOf(num));
+            if(possible_vals.contains(num)) {
+                new_possibles.add(num);
             }
         }
+        possible_vals = new_possibles;
     }
 
     public boolean isEmpty() {

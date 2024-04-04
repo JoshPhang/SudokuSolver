@@ -36,6 +36,12 @@ public class SudokuSolver extends Application{
         // Create solver threads
         Thread row_solver = new Thread(new SolverThreads(0));
         row_solver.start();
+        Thread col_solver = new Thread(new SolverThreads(1));
+        col_solver.start();
+        Thread box_solver = new Thread(new SolverThreads(2));
+        box_solver.start();
+        Thread check_solver = new Thread(new SolverThreads(3));
+        check_solver.start();
 
     }
 
