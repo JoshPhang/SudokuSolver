@@ -68,4 +68,19 @@ public class Board {
     public boolean isSolved() {
         return solved;
     }
+
+    public void checkSolved(Board solution) {
+        for(int i = 0; i < 9; i++) {
+            for(int j = 0; j < 9; j++) {
+                if(getTile(i,j).isEmpty() || !getTile(i,j).getVal().equals(solution.getTile(i,j).getVal())) {
+                    return;
+                }
+            }
+        }
+        solved = true;
+    }
+
+    public void setUnsolved() {
+        solved = false;
+    }
 }

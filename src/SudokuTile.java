@@ -1,4 +1,3 @@
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -55,5 +54,12 @@ public class SudokuTile {
 
     public void setFilled() {
         empty = false;
+    }
+
+    public boolean isCorrect(SudokuTile sol) {
+        if(val.equals(sol.getVal())) {
+            return true;
+        }
+        return false;
     }
 }

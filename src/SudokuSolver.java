@@ -1,26 +1,91 @@
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundPosition;
-import javafx.scene.layout.TilePane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
 
-import javax.swing.text.Position;
-import java.awt.*;
-
 public class SudokuSolver extends Application{
     public static Board puzzle = new Board();
+    public static Board solution = new Board();
+    public static TilePane bigPane = new TilePane();
+
+    private final String PUZZLE_FILE = "puzzle-medium.txt";
+    private final String SOLUTION_FILE = "solution-medium.txt";
 
     @Override
     public void start(Stage stage) throws Exception {
-        puzzle.loadBoardFromFile("puzzle.txt");
+        Button solveButton = new Button("Solve!");
+        solveButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)")));
+        solveButton.setBorder(Border.stroke(Paint.valueOf("black")));
+        solveButton.setPrefHeight(40);
+        solveButton.setPrefWidth(80);
+        solveButton.setTextFill(Paint.valueOf("black"));
+
+        Button resetButton = new Button("Reset!");
+        resetButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)")));
+        resetButton.setBorder(Border.stroke(Paint.valueOf("black")));
+        resetButton.setPrefHeight(40);
+        resetButton.setPrefWidth(80);
+        resetButton.setTextFill(Paint.valueOf("black"));
+
+        HBox buttonBox = new HBox();
+        buttonBox.setPadding(new Insets(10));
+        buttonBox.setSpacing(20);
+        buttonBox.setBackground(Background.fill(Paint.valueOf("rgb(60, 60, 60)")));
+        buttonBox.setAlignment(Pos.CENTER);
+
+        buttonBox.getChildren().add(solveButton);
+        buttonBox.getChildren().add(resetButton);
+
+        solveButton.setOnAction(event -> {
+            // Create solver threads
+            Thread row_solver = new Thread(new SolverThreads(0));
+            Thread col_solver = new Thread(new SolverThreads(1));
+            Thread box_solver = new Thread(new SolverThreads(2));
+            Thread check_solver = new Thread(new SolverThreads(3));
+
+            row_solver.start();
+            col_solver.start();
+            box_solver.start();
+            check_solver.start();
+
+            while(!puzzle.isSolved()) {
+                if(puzzle.needs_update) {
+                    bigPane = updateBoard(puzzle, bigPane);
+                }
+                puzzle.needs_update = false;
+            }
+
+            bigPane = updateBoard(puzzle, bigPane);
+
+            row_solver.interrupt();
+            col_solver.interrupt();
+            box_solver.interrupt();
+            check_solver.interrupt();
+        });
+        solveButton.setOnMouseEntered(mouseEvent -> solveButton.setBackground(Background.fill(Paint.valueOf("rgb(80, 80, 80)"))));
+        solveButton.setOnMouseExited(mouseEvent -> solveButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)"))));
+
+        resetButton.setOnMouseEntered(mouseEvent -> resetButton.setBackground(Background.fill(Paint.valueOf("rgb(80, 80, 80)"))));
+        resetButton.setOnMouseExited(mouseEvent -> resetButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)"))));
+        resetButton.setOnAction(event -> {
+            puzzle.loadBoardFromFile(PUZZLE_FILE);
+            puzzle.printBoard();
+
+            bigPane = updateBoard(puzzle, bigPane);
+            puzzle.setUnsolved();
+        });
+
+        puzzle.loadBoardFromFile(PUZZLE_FILE);
         puzzle.printBoard();
 
+        solution.loadBoardFromFile(SOLUTION_FILE);
+
         // Create master board
-        TilePane bigPane = new TilePane();
         bigPane.setPrefColumns(3);
         bigPane.setHgap(5);
         bigPane.setVgap(5);
@@ -29,23 +94,21 @@ public class SudokuSolver extends Application{
 
         bigPane = updateBoard(puzzle, bigPane);
 
+        VBox mainBox = new VBox();
+        mainBox.setPadding(new Insets(10));
+        mainBox.setSpacing(20);
+        mainBox.setBackground(Background.fill(Paint.valueOf("rgb(60, 60, 60)")));
+        mainBox.setAlignment(Pos.CENTER);
+
+        mainBox.getChildren().add(bigPane);
+        mainBox.getChildren().add(buttonBox);
+
         stage.setTitle("Sudoku Solver");
-        stage.setScene(new Scene(bigPane,600,600));
+        stage.setScene(new Scene(mainBox,600,600));
         stage.show();
-
-        // Create solver threads
-        Thread row_solver = new Thread(new SolverThreads(0));
-        row_solver.start();
-        Thread col_solver = new Thread(new SolverThreads(1));
-        col_solver.start();
-        Thread box_solver = new Thread(new SolverThreads(2));
-        box_solver.start();
-        Thread check_solver = new Thread(new SolverThreads(3));
-        check_solver.start();
-
     }
 
-    private TilePane updateBoard(Board board, TilePane bigPane) {
+    public static TilePane updateBoard(Board board, TilePane bigPane) {
         bigPane.getChildren().clear();
         TilePane[] panes = new TilePane[9];
 
