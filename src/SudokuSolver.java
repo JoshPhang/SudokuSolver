@@ -12,15 +12,18 @@ import javafx.stage.Stage;
 import java.util.Objects;
 
 public class SudokuSolver extends Application{
+    // Setup UI for Sudoku board
     public static final Board puzzle = new Board();
     public static Board solution = new Board();
     public static TilePane bigPane = new TilePane();
 
+    // Setting for choosing puzzle number (1-4)
     private final int PUZZLE_NUM = 4;
     private final String PUZZLE_FILE = "puzzles/puzzle_" + PUZZLE_NUM + ".txt";
 
     @Override
     public void start(Stage stage) {
+        // Create button to start solver
         Button solveButton = new Button("Solve!");
         solveButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)")));
         solveButton.setBorder(Border.stroke(Paint.valueOf("black")));
@@ -28,6 +31,7 @@ public class SudokuSolver extends Application{
         solveButton.setPrefWidth(80);
         solveButton.setTextFill(Paint.valueOf("black"));
 
+        // Create button to reset the board
         Button resetButton = new Button("Reset!");
         resetButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)")));
         resetButton.setBorder(Border.stroke(Paint.valueOf("black")));
@@ -35,6 +39,7 @@ public class SudokuSolver extends Application{
         resetButton.setPrefWidth(80);
         resetButton.setTextFill(Paint.valueOf("black"));
 
+        // Create box to hold the buttons
         HBox buttonBox = new HBox();
         buttonBox.setPadding(new Insets(10));
         buttonBox.setSpacing(20);
@@ -44,6 +49,7 @@ public class SudokuSolver extends Application{
         buttonBox.getChildren().add(solveButton);
         buttonBox.getChildren().add(resetButton);
 
+        // When solve button is clicked, start running threads
         solveButton.setOnAction(event -> {
             // Create solver threads
             Thread row_solver = new Thread(new SolverThreads(0));
@@ -56,6 +62,7 @@ public class SudokuSolver extends Application{
             box_solver.start();
             check_solver.start();
 
+            // Check if board is solved whenever there is an update
             while(!puzzle.getSolved()) {
                 if(Board.needs_update) {
                     updateBoard(puzzle, bigPane);
@@ -65,16 +72,21 @@ public class SudokuSolver extends Application{
 
             updateBoard(puzzle, bigPane);
 
+            // Stop threads when board is solved
             row_solver.interrupt();
             col_solver.interrupt();
             box_solver.interrupt();
             check_solver.interrupt();
         });
+
+        // Add mouse hover effects for buttons
         solveButton.setOnMouseEntered(mouseEvent -> solveButton.setBackground(Background.fill(Paint.valueOf("rgb(80, 80, 80)"))));
         solveButton.setOnMouseExited(mouseEvent -> solveButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)"))));
 
         resetButton.setOnMouseEntered(mouseEvent -> resetButton.setBackground(Background.fill(Paint.valueOf("rgb(80, 80, 80)"))));
         resetButton.setOnMouseExited(mouseEvent -> resetButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)"))));
+
+        // Reset board when reset button is clicked
         resetButton.setOnAction(event -> {
             puzzle.loadBoardFromFile(PUZZLE_FILE);
             puzzle.printBoard();
@@ -83,11 +95,13 @@ public class SudokuSolver extends Application{
             puzzle.setUnsolved();
         });
 
+        // Load the puzzle from file into the board
         puzzle.loadBoardFromFile(PUZZLE_FILE);
         puzzle.printBoard();
 
-        String SOLUTION_FILE = "puzzles/solution_" + PUZZLE_NUM + ".txt";
-        solution.loadBoardFromFile(SOLUTION_FILE);
+        // Load the solution from file into another board solely for checking.
+//        String SOLUTION_FILE = "puzzles/solution_" + PUZZLE_NUM + ".txt";
+//        solution.loadBoardFromFile(SOLUTION_FILE);
 
         // Create master board
         bigPane.setPrefColumns(3);
@@ -96,8 +110,10 @@ public class SudokuSolver extends Application{
         bigPane.setAlignment(Pos.CENTER);
         bigPane.setBackground(Background.fill(Paint.valueOf("rgb(60, 60, 60)")));
 
+        // Update the board UI when everything is set up
         updateBoard(puzzle, bigPane);
 
+        // Create box to hold both the board and the buttons
         VBox mainBox = new VBox();
         mainBox.setPadding(new Insets(10));
         mainBox.setSpacing(20);
@@ -107,6 +123,7 @@ public class SudokuSolver extends Application{
         mainBox.getChildren().add(bigPane);
         mainBox.getChildren().add(buttonBox);
 
+        // Create the scene and display it to the user
         stage.setTitle("Sudoku Solver");
         stage.setScene(new Scene(mainBox,600,600));
         stage.getIcons().add(new Image(Objects.requireNonNull(SudokuSolver.class.getResourceAsStream("images/icon.png"))));

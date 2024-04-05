@@ -163,7 +163,7 @@ public class SolverThreads implements Runnable {
                     }
                 }
             }
-            SudokuSolver.puzzle.checkSolved(SudokuSolver.solution);
+            SudokuSolver.puzzle.checkSolved();
         }
         System.out.println("Solved!");
     }

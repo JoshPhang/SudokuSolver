@@ -65,10 +65,10 @@ public class Board {
         return solved;
     }
 
-    public void checkSolved(Board solution) {
+    public void checkSolved() {
         for(int i = 0; i < 9; i++) {
             for(int j = 0; j < 9; j++) {
-                if(getTile(i,j).isEmpty() || !getTile(i,j).getVal().equals(solution.getTile(i,j).getVal())) {
+                if(getTile(i,j).isEmpty()) {
                     return;
                 }
             }
