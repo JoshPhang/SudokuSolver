@@ -4,9 +4,12 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
+
+import java.util.Objects;
 
 public class SudokuSolver extends Application{
     public static final Board puzzle = new Board();
@@ -106,6 +109,7 @@ public class SudokuSolver extends Application{
 
         stage.setTitle("Sudoku Solver");
         stage.setScene(new Scene(mainBox,600,600));
+        stage.getIcons().add(new Image(Objects.requireNonNull(SudokuSolver.class.getResourceAsStream("images/icon.png"))));
         stage.show();
     }
 
