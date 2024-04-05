@@ -4,7 +4,9 @@ import java.util.Arrays;
 public class SolverThreads implements Runnable {
     // id=0: row checker
     // id=1: col checker
-    private int id;
+    // id=2: box checker
+    // id=3: valid checker
+    private final int id;
 
     public SolverThreads(int id) {
         this.id = id;
@@ -12,7 +14,7 @@ public class SolverThreads implements Runnable {
 
     @Override
     public void run() {
-        while(!SudokuSolver.puzzle.isSolved()) {
+        while(!SudokuSolver.puzzle.getSolved()) {
             synchronized (SudokuSolver.puzzle) {
                 switch (id) {
                     case 0: {
@@ -22,7 +24,7 @@ public class SolverThreads implements Runnable {
                                 SudokuTile curr_tile = SudokuSolver.puzzle.getTile(i, j);
                                 if (!curr_tile.isEmpty()) {
                                     if (isIn(curr_tile.getVal(), possible_in_row)) {                // Remove possible values for the row
-                                        possible_in_row.remove(Integer.valueOf(curr_tile.getVal()));
+                                        possible_in_row.remove(curr_tile.getVal());
                                     }
                                 }
                             }
@@ -30,10 +32,6 @@ public class SolverThreads implements Runnable {
                             for (int j = 0; j < 9; j++) {
                                 if (SudokuSolver.puzzle.getTile(i, j).isEmpty()) {
                                     SudokuSolver.puzzle.getTile(i, j).intersectList(possible_in_row);
-    //                                System.out.println("possible values in tile " + i + "," + j + " is ");
-    //                                for (Integer num : SudokuSolver.puzzle.getTile(i, j).getPossible_vals()) {
-    //                                    System.out.print(num + " ");
-    //                                }
                                 }
 
                                 // Fill in tile if there is only one possible value
@@ -41,13 +39,8 @@ public class SolverThreads implements Runnable {
                                     int val = SudokuSolver.puzzle.getTile(i, j).getPossible_vals().get(0);
                                     SudokuSolver.puzzle.setTile(i, j, val);
                                     SudokuSolver.puzzle.getTile(i, j).setFilled();
-                                    SudokuSolver.puzzle.needs_update = true;
-                                    System.out.print("Filling in " + val + " into " + i + "," + j + " -- c0");
-                                    if (SudokuSolver.puzzle.getTile(i, j).isCorrect(SudokuSolver.solution.getTile(i, j))) {
-                                        System.out.println(" -- correct");
-                                    } else {
-                                        System.out.println(" -- wrong");
-                                    }
+                                    Board.needs_update = true;
+                                    System.out.println("Filling in " + val + " into " + i + "," + j + " -- c0");
                                 }
                             }
                         }
@@ -59,7 +52,7 @@ public class SolverThreads implements Runnable {
                                 SudokuTile curr_tile = SudokuSolver.puzzle.getTile(i, j);
                                 if (!curr_tile.isEmpty()) {
                                     if (isIn(curr_tile.getVal(), possible_in_col)) {                // Remove possible values for the col with tile if it is filled
-                                        possible_in_col.remove(Integer.valueOf(curr_tile.getVal()));
+                                        possible_in_col.remove(curr_tile.getVal());
                                     }
                                 }
                             }
@@ -67,10 +60,6 @@ public class SolverThreads implements Runnable {
                             for (int i = 0; i < 9; i++) {
                                 if (SudokuSolver.puzzle.getTile(i, j).isEmpty()) {
                                     SudokuSolver.puzzle.getTile(i, j).intersectList(possible_in_col);
-    //                                System.out.println("possible values in tile " + i + "," + j + " is ");
-    //                                for (Integer num : SudokuSolver.puzzle.getTile(i, j).getPossible_vals()) {
-    //                                    System.out.print(num + " ");
-    //                                }
                                 }
 
                                 // Fill in tile if there is only one possible value
@@ -78,13 +67,8 @@ public class SolverThreads implements Runnable {
                                     int val = SudokuSolver.puzzle.getTile(i, j).getPossible_vals().get(0);
                                     SudokuSolver.puzzle.setTile(i, j, val);
                                     SudokuSolver.puzzle.getTile(i, j).setFilled();
-                                    SudokuSolver.puzzle.needs_update = true;
-                                    System.out.print("Filling in " + val + " into " + i + "," + j + " -- c1");
-                                    if (SudokuSolver.puzzle.getTile(i, j).isCorrect(SudokuSolver.solution.getTile(i, j))) {
-                                        System.out.println(" -- correct");
-                                    } else {
-                                        System.out.println(" -- wrong");
-                                    }
+                                    Board.needs_update = true;
+                                    System.out.println("Filling in " + val + " into " + i + "," + j + " -- c1");
                                 }
                             }
                         }
@@ -130,16 +114,11 @@ public class SolverThreads implements Runnable {
                                 for (int j = 0; j < 9; j++) {
                                     if (SudokuSolver.puzzle.getTile(i, j).isEmpty()) {
                                         ArrayList<Integer> nums = SudokuSolver.puzzle.getTile(i, j).getPossible_vals();
-                                        if (nums.contains(Integer.valueOf(val))) {
+                                        if (nums.contains(val)) {
                                             SudokuSolver.puzzle.setTile(i, j, val);
                                             SudokuSolver.puzzle.getTile(i, j).setFilled();
-                                            SudokuSolver.puzzle.needs_update = true;
-                                            System.out.print("Filling in " + val + " into " + i + "," + j + " -- c3.1");
-                                            if (SudokuSolver.puzzle.getTile(i, j).isCorrect(SudokuSolver.solution.getTile(i, j))) {
-                                                System.out.println(" -- correct");
-                                            } else {
-                                                System.out.println(" -- wrong");
-                                            }
+                                            Board.needs_update = true;
+                                            System.out.println("Filling in " + val + " into " + i + "," + j + " -- c3.1");
                                         }
                                     }
                                 }
@@ -171,16 +150,11 @@ public class SolverThreads implements Runnable {
                                 for (int i = 0; i < 9; i++) {
                                     if (SudokuSolver.puzzle.getTile(i, j).isEmpty()) {
                                         ArrayList<Integer> nums = SudokuSolver.puzzle.getTile(i, j).getPossible_vals();
-                                        if (nums.contains(Integer.valueOf(val))) {
+                                        if (nums.contains(val)) {
                                             SudokuSolver.puzzle.setTile(i, j, val);
                                             SudokuSolver.puzzle.getTile(i, j).setFilled();
-                                            SudokuSolver.puzzle.needs_update = true;
-                                            System.out.print("Filling in " + val + " into " + i + "," + j + " -- c3.2");
-                                            if (SudokuSolver.puzzle.getTile(i, j).isCorrect(SudokuSolver.solution.getTile(i, j))) {
-                                                System.out.println(" -- correct");
-                                            } else {
-                                                System.out.println(" -- wrong");
-                                            }
+                                            Board.needs_update = true;
+                                            System.out.println("Filling in " + val + " into " + i + "," + j + " -- c3.2");
                                         }
                                     }
                                 }
@@ -196,7 +170,7 @@ public class SolverThreads implements Runnable {
 
     public boolean isIn(Integer val, ArrayList<Integer> nums) {
         for(Integer num : nums) {
-            if(val == num) {
+            if(val.equals(num)) {
                 return true;
             }
         }
@@ -206,65 +180,66 @@ public class SolverThreads implements Runnable {
     private void checkBox(int box) {
         int i_beg, i_end, j_beg, j_end;
         switch (box) {
-            case 1:
+            case 1 -> {
                 i_beg = 0;
                 i_end = 3;
                 j_beg = 0;
                 j_end = 3;
-                break;
-            case 2:
+            }
+            case 2 -> {
                 i_beg = 0;
                 i_end = 3;
                 j_beg = 3;
                 j_end = 6;
-                break;
-            case 3:
+            }
+            case 3 -> {
                 i_beg = 0;
                 i_end = 3;
                 j_beg = 6;
                 j_end = 9;
-                break;
-            case 4:
+            }
+            case 4 -> {
                 i_beg = 3;
                 i_end = 6;
                 j_beg = 0;
                 j_end = 3;
-                break;
-            case 5:
+            }
+            case 5 -> {
                 i_beg = 3;
                 i_end = 6;
                 j_beg = 3;
                 j_end = 6;
-                break;
-            case 6:
+            }
+            case 6 -> {
                 i_beg = 3;
                 i_end = 6;
                 j_beg = 6;
                 j_end = 9;
-                break;
-            case 7:
+            }
+            case 7 -> {
                 i_beg = 6;
                 i_end = 9;
                 j_beg = 0;
                 j_end = 3;
-                break;
-            case 8:
+            }
+            case 8 -> {
                 i_beg = 6;
                 i_end = 9;
                 j_beg = 3;
                 j_end = 6;
-                break;
-            case 9:
+            }
+            case 9 -> {
                 i_beg = 6;
                 i_end = 9;
                 j_beg = 6;
                 j_end = 9;
-                break;
-            default:
+            }
+            default -> {
                 i_beg = 0;
                 i_end = 0;
                 j_beg = 0;
                 j_end = 0;
+            }
         }
         // Sub-box checks
 
@@ -275,7 +250,7 @@ public class SolverThreads implements Runnable {
                 SudokuTile curr_tile = SudokuSolver.puzzle.getTile(i,j);
                 if (!curr_tile.isEmpty()) {
                     if (isIn(curr_tile.getVal(), possible_in_box)) {                // Remove possible values for the box with tile if it is filled
-                        possible_in_box.remove(Integer.valueOf(curr_tile.getVal()));
+                        possible_in_box.remove(curr_tile.getVal());
                     }
                 }
             }
@@ -308,16 +283,11 @@ public class SolverThreads implements Runnable {
                 for(int j = j_beg; j < j_end; j++) {
                     if(SudokuSolver.puzzle.getTile(i,j).isEmpty()) {
                         ArrayList<Integer> nums = SudokuSolver.puzzle.getTile(i,j).getPossible_vals();
-                        if(nums.contains(Integer.valueOf(val))) {
+                        if(nums.contains(val)) {
                             SudokuSolver.puzzle.setTile(i,j,val);
                             SudokuSolver.puzzle.getTile(i,j).setFilled();
-                            SudokuSolver.puzzle.needs_update = true;
-                            System.out.print("Filling in " + val + " into " + i + "," + j + " -- c2.1");
-                            if(SudokuSolver.puzzle.getTile(i,j).isCorrect(SudokuSolver.solution.getTile(i,j))) {
-                                System.out.println(" -- correct");
-                            } else {
-                                System.out.println(" -- wrong");
-                            }
+                            Board.needs_update = true;
+                            System.out.println("Filling in " + val + " into " + i + "," + j + " -- c2.1");
                         }
                     }
                 }
@@ -336,13 +306,8 @@ public class SolverThreads implements Runnable {
                     val = SudokuSolver.puzzle.getTile(i, j).getPossible_vals().get(0);
                     SudokuSolver.puzzle.setTile(i, j, val);
                     SudokuSolver.puzzle.getTile(i, j).setFilled();
-                    SudokuSolver.puzzle.needs_update = true;
-                    System.out.print("Filling in " + val + " into " + i + "," + j + " -- c2.2");
-                    if(SudokuSolver.puzzle.getTile(i,j).isCorrect(SudokuSolver.solution.getTile(i,j))) {
-                        System.out.println(" -- correct");
-                    } else {
-                        System.out.println(" -- wrong");
-                    }
+                    Board.needs_update = true;
+                    System.out.println("Filling in " + val + " into " + i + "," + j + " -- c2.2");
                 }
             }
         }

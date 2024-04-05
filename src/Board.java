@@ -3,7 +3,7 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class Board {
-    private SudokuTile[][] board;
+    private final SudokuTile[][] board;
     public static boolean needs_update;
     public static boolean solved;
 
@@ -19,7 +19,7 @@ public class Board {
 
     public void loadBoardFromFile(String file_name) {
         File file = new File(file_name);
-        Scanner fileReader = null;
+        Scanner fileReader;
         try {
             fileReader = new Scanner(file);
         } catch (FileNotFoundException e) {
@@ -61,11 +61,7 @@ public class Board {
         return board[i][j];
     }
 
-    public SudokuTile[][] getBoard() {
-        return board;
-    }
-
-    public boolean isSolved() {
+    public boolean getSolved() {
         return solved;
     }
 

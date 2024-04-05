@@ -9,15 +9,15 @@ import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
 
 public class SudokuSolver extends Application{
-    public static Board puzzle = new Board();
+    public static final Board puzzle = new Board();
     public static Board solution = new Board();
     public static TilePane bigPane = new TilePane();
 
-    private final String PUZZLE_FILE = "puzzle-medium.txt";
-    private final String SOLUTION_FILE = "solution-medium.txt";
+    private final int PUZZLE_NUM = 4;
+    private final String PUZZLE_FILE = "puzzles/puzzle_" + PUZZLE_NUM + ".txt";
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage stage) {
         Button solveButton = new Button("Solve!");
         solveButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)")));
         solveButton.setBorder(Border.stroke(Paint.valueOf("black")));
@@ -53,14 +53,14 @@ public class SudokuSolver extends Application{
             box_solver.start();
             check_solver.start();
 
-            while(!puzzle.isSolved()) {
-                if(puzzle.needs_update) {
-                    bigPane = updateBoard(puzzle, bigPane);
+            while(!puzzle.getSolved()) {
+                if(Board.needs_update) {
+                    updateBoard(puzzle, bigPane);
                 }
-                puzzle.needs_update = false;
+                Board.needs_update = false;
             }
 
-            bigPane = updateBoard(puzzle, bigPane);
+            updateBoard(puzzle, bigPane);
 
             row_solver.interrupt();
             col_solver.interrupt();
@@ -76,13 +76,14 @@ public class SudokuSolver extends Application{
             puzzle.loadBoardFromFile(PUZZLE_FILE);
             puzzle.printBoard();
 
-            bigPane = updateBoard(puzzle, bigPane);
+            updateBoard(puzzle, bigPane);
             puzzle.setUnsolved();
         });
 
         puzzle.loadBoardFromFile(PUZZLE_FILE);
         puzzle.printBoard();
 
+        String SOLUTION_FILE = "puzzles/solution_" + PUZZLE_NUM + ".txt";
         solution.loadBoardFromFile(SOLUTION_FILE);
 
         // Create master board
@@ -92,7 +93,7 @@ public class SudokuSolver extends Application{
         bigPane.setAlignment(Pos.CENTER);
         bigPane.setBackground(Background.fill(Paint.valueOf("rgb(60, 60, 60)")));
 
-        bigPane = updateBoard(puzzle, bigPane);
+        updateBoard(puzzle, bigPane);
 
         VBox mainBox = new VBox();
         mainBox.setPadding(new Insets(10));
@@ -108,7 +109,7 @@ public class SudokuSolver extends Application{
         stage.show();
     }
 
-    public static TilePane updateBoard(Board board, TilePane bigPane) {
+    public static void updateBoard(Board board, TilePane bigPane) {
         bigPane.getChildren().clear();
         TilePane[] panes = new TilePane[9];
 
@@ -162,7 +163,6 @@ public class SudokuSolver extends Application{
             }
         }
 
-        return bigPane;
     }
 
     public static void main(String[] args) {
