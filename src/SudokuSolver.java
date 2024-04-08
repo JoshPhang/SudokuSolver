@@ -3,6 +3,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Spinner;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
@@ -14,12 +15,11 @@ import java.util.Objects;
 public class SudokuSolver extends Application{
     // Setup UI for Sudoku board
     public static final Board puzzle = new Board();
-    public static Board solution = new Board();
     public static TilePane bigPane = new TilePane();
 
     // Setting for choosing puzzle number (1-4)
-    private final int PUZZLE_NUM = 4;
-    private final String PUZZLE_FILE = "puzzles/puzzle_" + PUZZLE_NUM + ".txt";
+    private int PUZZLE_NUM = 1;
+    private String PUZZLE_FILE = "puzzles/puzzle_" + PUZZLE_NUM + ".txt";
 
     @Override
     public void start(Stage stage) {
@@ -39,13 +39,21 @@ public class SudokuSolver extends Application{
         resetButton.setPrefWidth(80);
         resetButton.setTextFill(Paint.valueOf("black"));
 
-        // Create box to hold the buttons
+        // UI for choosing puzzle
+        Spinner puzzleSpinner = new Spinner(1,4,1,1);
+        puzzleSpinner.setPrefHeight(40);
+        puzzleSpinner.setPrefWidth(80);
+        puzzleSpinner.setEditable(false);
+        puzzleSpinner.setBackground(Background.fill(Paint.valueOf("rgb(120,120,120)")));
+
+        // Create box to hold the buttons and spinner
         HBox buttonBox = new HBox();
         buttonBox.setPadding(new Insets(10));
         buttonBox.setSpacing(20);
         buttonBox.setBackground(Background.fill(Paint.valueOf("rgb(60, 60, 60)")));
         buttonBox.setAlignment(Pos.CENTER);
 
+        buttonBox.getChildren().add(puzzleSpinner);
         buttonBox.getChildren().add(solveButton);
         buttonBox.getChildren().add(resetButton);
 
@@ -88,12 +96,15 @@ public class SudokuSolver extends Application{
 
         // Reset board when reset button is clicked
         resetButton.setOnAction(event -> {
+            PUZZLE_FILE = "puzzles/puzzle_" + PUZZLE_NUM + ".txt";
             puzzle.loadBoardFromFile(PUZZLE_FILE);
             puzzle.printBoard();
 
             updateBoard(puzzle, bigPane);
             puzzle.setUnsolved();
         });
+
+        puzzleSpinner.setOnMouseClicked(event -> PUZZLE_NUM = (int) puzzleSpinner.getValue());
 
         // Load the puzzle from file into the board
         puzzle.loadBoardFromFile(PUZZLE_FILE);
