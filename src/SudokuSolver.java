@@ -32,12 +32,20 @@ public class SudokuSolver extends Application{
         solveButton.setTextFill(Paint.valueOf("black"));
 
         // Create button to reset the board
-        Button resetButton = new Button("Reset!");
+        Button resetButton = new Button("Reset");
         resetButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)")));
         resetButton.setBorder(Border.stroke(Paint.valueOf("black")));
         resetButton.setPrefHeight(40);
         resetButton.setPrefWidth(80);
         resetButton.setTextFill(Paint.valueOf("black"));
+
+        // Create button to close the board
+        Button closeButton = new Button("Exit");
+        closeButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)")));
+        closeButton.setBorder(Border.stroke(Paint.valueOf("black")));
+        closeButton.setPrefHeight(40);
+        closeButton.setPrefWidth(80);
+        closeButton.setTextFill(Paint.valueOf("black"));
 
         // UI for choosing puzzle
         Spinner puzzleSpinner = new Spinner(1,4,1,1);
@@ -56,6 +64,7 @@ public class SudokuSolver extends Application{
         buttonBox.getChildren().add(puzzleSpinner);
         buttonBox.getChildren().add(solveButton);
         buttonBox.getChildren().add(resetButton);
+        buttonBox.getChildren().add(closeButton);
 
         // When solve button is clicked, start running threads
         solveButton.setOnAction(event -> {
@@ -87,13 +96,6 @@ public class SudokuSolver extends Application{
             check_solver.interrupt();
         });
 
-        // Add mouse hover effects for buttons
-        solveButton.setOnMouseEntered(mouseEvent -> solveButton.setBackground(Background.fill(Paint.valueOf("rgb(80, 80, 80)"))));
-        solveButton.setOnMouseExited(mouseEvent -> solveButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)"))));
-
-        resetButton.setOnMouseEntered(mouseEvent -> resetButton.setBackground(Background.fill(Paint.valueOf("rgb(80, 80, 80)"))));
-        resetButton.setOnMouseExited(mouseEvent -> resetButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)"))));
-
         // Reset board when reset button is clicked
         resetButton.setOnAction(event -> {
             PUZZLE_FILE = "puzzles/puzzle_" + PUZZLE_NUM + ".txt";
@@ -104,7 +106,29 @@ public class SudokuSolver extends Application{
             puzzle.setUnsolved();
         });
 
-        puzzleSpinner.setOnMouseClicked(event -> PUZZLE_NUM = (int) puzzleSpinner.getValue());
+        // Close board when close button is clicked
+        closeButton.setOnAction(event -> stage.close());
+
+        // Add mouse hover effects for buttons
+        solveButton.setOnMouseEntered(mouseEvent -> solveButton.setBackground(Background.fill(Paint.valueOf("rgb(80, 80, 80)"))));
+        solveButton.setOnMouseExited(mouseEvent -> solveButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)"))));
+
+        resetButton.setOnMouseEntered(mouseEvent -> resetButton.setBackground(Background.fill(Paint.valueOf("rgb(80, 80, 80)"))));
+        resetButton.setOnMouseExited(mouseEvent -> resetButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)"))));
+
+        closeButton.setOnMouseEntered(mouseEvent -> closeButton.setBackground(Background.fill(Paint.valueOf("rgb(80, 80, 80)"))));
+        closeButton.setOnMouseExited(mouseEvent -> closeButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)"))));
+
+
+        puzzleSpinner.setOnMouseClicked(event -> {
+            PUZZLE_NUM = (int) puzzleSpinner.getValue();
+            PUZZLE_FILE = "puzzles/puzzle_" + PUZZLE_NUM + ".txt";
+            puzzle.loadBoardFromFile(PUZZLE_FILE);
+            puzzle.printBoard();
+
+            updateBoard(puzzle, bigPane);
+            puzzle.setUnsolved();
+        });
 
         // Load the puzzle from file into the board
         puzzle.loadBoardFromFile(PUZZLE_FILE);
@@ -137,6 +161,7 @@ public class SudokuSolver extends Application{
         // Create the scene and display it to the user
         stage.setTitle("Sudoku Solver");
         stage.setScene(new Scene(mainBox,600,600));
+        stage.setResizable(false);
         stage.getIcons().add(new Image(Objects.requireNonNull(SudokuSolver.class.getResourceAsStream("images/icon.png"))));
         stage.show();
     }
@@ -182,6 +207,7 @@ public class SudokuSolver extends Application{
 
                 if(board.getTile(i,j).getVal() == null) {
                     textBox = new TextField("");
+                    textBox.setEditable(false);
                 } else {
                     textBox = new TextField(board.getTile(i,j).getVal().toString());
                     textBox.setEditable(false);
