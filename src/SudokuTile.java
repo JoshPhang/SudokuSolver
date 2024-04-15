@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class SudokuTile {
-    private Integer val;
+    private final Integer val;
     private boolean empty;
     private ArrayList<Integer> possible_vals;
 
@@ -19,19 +19,6 @@ public class SudokuTile {
 
     public Integer getVal() {
         return val;
-    }
-
-    public void removePossible(int val) {
-        possible_vals.remove(Integer.valueOf(val));
-    }
-
-    public boolean valInList(ArrayList<Integer> list) {
-        for(Integer num : list) {
-            if(val == num) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public ArrayList<Integer> getPossible_vals() {
@@ -56,10 +43,4 @@ public class SudokuTile {
         empty = false;
     }
 
-    public boolean isCorrect(SudokuTile sol) {
-        if(val.equals(sol.getVal())) {
-            return true;
-        }
-        return false;
-    }
 }

@@ -5,12 +5,14 @@ import java.util.Scanner;
 public class Board {
     private final SudokuTile[][] board;
     public static boolean needs_update;
-    public static boolean solved;
+    private static boolean solved;
+    private static boolean backtracking;
 
     public Board() {
         board = new SudokuTile[9][9];
         needs_update = false;
         solved = false;
+        backtracking = false;
     }
 
     public void setTile(int x, int y, int val) {
@@ -65,7 +67,7 @@ public class Board {
         return solved;
     }
 
-    public void checkSolved() {
+    public synchronized void checkSolved() {
         for(int i = 0; i < 9; i++) {
             for(int j = 0; j < 9; j++) {
                 if(getTile(i,j).isEmpty()) {
@@ -78,5 +80,13 @@ public class Board {
 
     public void setUnsolved() {
         solved = false;
+    }
+
+    public void setBacktracking(boolean backtracking) {
+        this.backtracking = backtracking;
+    }
+
+    public boolean getBacktracking() {
+        return backtracking;
     }
 }

@@ -8,6 +8,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Paint;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.util.Objects;
@@ -17,12 +19,27 @@ public class SudokuSolver extends Application{
     public static final Board puzzle = new Board();
     public static TilePane bigPane = new TilePane();
 
-    // Setting for choosing puzzle number (1-4)
+    // Setting for choosing puzzle number (1-5)
     private int PUZZLE_NUM = 1;
     private String PUZZLE_FILE = "puzzles/puzzle_" + PUZZLE_NUM + ".txt";
 
     @Override
     public void start(Stage stage) {
+        // Create title of scene
+        Text titleText = new Text("Sudoku Solver");
+        titleText.setFont(Font.font("Stencil", 48));
+
+        // Create status of puzzle
+        Text solvedStatus = new Text("");
+        solvedStatus.setFont(Font.font("Stencil", 24));
+
+        // Create box to hold both the board and the buttons
+        VBox mainBox = new VBox();
+        mainBox.setPadding(new Insets(10));
+        mainBox.setSpacing(20);
+        mainBox.setBackground(Background.fill(Paint.valueOf("rgb(60, 60, 60)")));
+        mainBox.setAlignment(Pos.CENTER);
+
         // Create button to start solver
         Button solveButton = new Button("Solve!");
         solveButton.setBackground(Background.fill(Paint.valueOf("rgb(120, 120, 120)")));
@@ -48,7 +65,7 @@ public class SudokuSolver extends Application{
         closeButton.setTextFill(Paint.valueOf("black"));
 
         // UI for choosing puzzle
-        Spinner puzzleSpinner = new Spinner(1,4,1,1);
+        Spinner puzzleSpinner = new Spinner(1,5,1,1);
         puzzleSpinner.setPrefHeight(40);
         puzzleSpinner.setPrefWidth(80);
         puzzleSpinner.setEditable(false);
@@ -80,15 +97,23 @@ public class SudokuSolver extends Application{
             check_solver.start();
 
             // Check if board is solved whenever there is an update
-            while(!puzzle.getSolved()) {
+            while(!puzzle.getSolved() && !puzzle.getBacktracking()) {
                 if(Board.needs_update) {
                     updateBoard(puzzle, bigPane);
                 }
                 Board.needs_update = false;
+                System.out.print(""); // Random sout here to prevent program from occasionally crashing idk why lol
             }
 
             updateBoard(puzzle, bigPane);
 
+            if(puzzle.getSolved()) {
+                solvedStatus.setText("Solved!");
+                solvedStatus.setFill(Paint.valueOf("rgb(30,180,30)")); // Green
+            } else {
+                solvedStatus.setText("Backtracking needed.");
+                solvedStatus.setFill(Paint.valueOf("rgb(180,30,30)")); // Red
+            }
             // Stop threads when board is solved
             row_solver.interrupt();
             col_solver.interrupt();
@@ -102,8 +127,10 @@ public class SudokuSolver extends Application{
             puzzle.loadBoardFromFile(PUZZLE_FILE);
             puzzle.printBoard();
 
+            solvedStatus.setText("");
             updateBoard(puzzle, bigPane);
             puzzle.setUnsolved();
+            puzzle.setBacktracking(false);
         });
 
         // Close board when close button is clicked
@@ -126,17 +153,15 @@ public class SudokuSolver extends Application{
             puzzle.loadBoardFromFile(PUZZLE_FILE);
             puzzle.printBoard();
 
+            solvedStatus.setText("");
             updateBoard(puzzle, bigPane);
             puzzle.setUnsolved();
+            puzzle.setBacktracking(false);
         });
 
         // Load the puzzle from file into the board
         puzzle.loadBoardFromFile(PUZZLE_FILE);
         puzzle.printBoard();
-
-        // Load the solution from file into another board solely for checking.
-//        String SOLUTION_FILE = "puzzles/solution_" + PUZZLE_NUM + ".txt";
-//        solution.loadBoardFromFile(SOLUTION_FILE);
 
         // Create master board
         bigPane.setPrefColumns(3);
@@ -148,19 +173,14 @@ public class SudokuSolver extends Application{
         // Update the board UI when everything is set up
         updateBoard(puzzle, bigPane);
 
-        // Create box to hold both the board and the buttons
-        VBox mainBox = new VBox();
-        mainBox.setPadding(new Insets(10));
-        mainBox.setSpacing(20);
-        mainBox.setBackground(Background.fill(Paint.valueOf("rgb(60, 60, 60)")));
-        mainBox.setAlignment(Pos.CENTER);
-
+        mainBox.getChildren().add(titleText);
         mainBox.getChildren().add(bigPane);
         mainBox.getChildren().add(buttonBox);
+        mainBox.getChildren().add(solvedStatus);
 
         // Create the scene and display it to the user
         stage.setTitle("Sudoku Solver");
-        stage.setScene(new Scene(mainBox,600,600));
+        stage.setScene(new Scene(mainBox,600,700));
         stage.setResizable(false);
         stage.getIcons().add(new Image(Objects.requireNonNull(SudokuSolver.class.getResourceAsStream("images/icon.png"))));
         stage.show();
@@ -207,12 +227,11 @@ public class SudokuSolver extends Application{
 
                 if(board.getTile(i,j).getVal() == null) {
                     textBox = new TextField("");
-                    textBox.setEditable(false);
                 } else {
                     textBox = new TextField(board.getTile(i,j).getVal().toString());
-                    textBox.setEditable(false);
-                    textBox.setStyle("-fx-text-inner-color: rgb(0, 20, 100);");
                 }
+                textBox.setStyle("-fx-text-inner-color: rgb(0, 20, 100);");
+                textBox.setEditable(false);
                 textBox.setPrefSize(50,50);
                 textBox.setAlignment(Pos.CENTER);
                 textBox.setBackground(Background.fill(Paint.valueOf("rgb(100, 100, 100)")));

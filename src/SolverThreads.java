@@ -7,17 +7,20 @@ public class SolverThreads implements Runnable {
     // id=2: box checker
     // id=3: valid checker
     private final int id;
+    private int num_iterations_without_change;
 
     public SolverThreads(int id) {
         this.id = id;
+        num_iterations_without_change = 0;
     }
 
     @Override
     public void run() {
-        while(!SudokuSolver.puzzle.getSolved()) {
-            synchronized (SudokuSolver.puzzle) {
-                switch (id) {
-                    case 0: {
+        while(!SudokuSolver.puzzle.getSolved() && !SudokuSolver.puzzle.getBacktracking()) {
+            boolean change_made = false;
+            switch (id) {
+                case 0: {
+                    synchronized (SudokuSolver.puzzle) {
                         for (int i = 0; i < 9; i++) {                                    // Check rows line by line for seen numbers
                             ArrayList<Integer> possible_in_row = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
                             for (int j = 0; j < 9; j++) {
@@ -41,11 +44,15 @@ public class SolverThreads implements Runnable {
                                     SudokuSolver.puzzle.getTile(i, j).setFilled();
                                     Board.needs_update = true;
                                     System.out.println("Filling in " + val + " into " + i + "," + j + " -- c0");
+                                    change_made = true;
                                 }
                             }
                         }
                     }
-                    case 1: {
+                    break;
+                }
+                case 1: {
+                    synchronized (SudokuSolver.puzzle) {
                         for (int j = 0; j < 9; j++) {                                    // Check col line by line for seen numbers
                             ArrayList<Integer> possible_in_col = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
                             for (int i = 0; i < 9; i++) {
@@ -69,26 +76,37 @@ public class SolverThreads implements Runnable {
                                     SudokuSolver.puzzle.getTile(i, j).setFilled();
                                     Board.needs_update = true;
                                     System.out.println("Filling in " + val + " into " + i + "," + j + " -- c1");
+                                    change_made = true;
                                 }
                             }
                         }
                     }
-                    case 2: {
+                    break;
+                }
+                case 2: {
+                    synchronized (SudokuSolver.puzzle) {
+                        boolean[] changes = new boolean[9];
                         // Sub-box checks
-                        checkBox(1);
-                        checkBox(2);
-                        checkBox(3);
-                        checkBox(4);
-                        checkBox(5);
-                        checkBox(6);
-                        checkBox(7);
-                        checkBox(8);
-                        checkBox(9);
-                    }
-                    case 3: {
-                        // Individually check each tile compared to other tiles in its row/col/box
-                        // to see if it has the only possible number
+                        changes[0] = checkBox(1);
+                        changes[1] = checkBox(2);
+                        changes[2] = checkBox(3);
+                        changes[3] = checkBox(4);
+                        changes[4] = checkBox(5);
+                        changes[5] = checkBox(6);
+                        changes[6] = checkBox(7);
+                        changes[7] = checkBox(8);
+                        changes[8] = checkBox(9);
 
+                        change_made = changes[0] || changes[1] || changes[2] ||
+                                      changes[3] || changes[4] || changes[5] ||
+                                      changes[6] || changes[7] || changes[8];
+                    }
+                    break;
+                }
+                case 3: {
+                    // Individually check each tile compared to other tiles in its row/col/box
+                    // to see if it has the only possible number
+                    synchronized (SudokuSolver.puzzle) {
                         // #1 check row
                         int[] num_nums = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
                         for (int i = 0; i < 9; i++) {
@@ -119,6 +137,7 @@ public class SolverThreads implements Runnable {
                                             SudokuSolver.puzzle.getTile(i, j).setFilled();
                                             Board.needs_update = true;
                                             System.out.println("Filling in " + val + " into " + i + "," + j + " -- c3.1");
+                                            change_made = true;
                                         }
                                     }
                                 }
@@ -155,13 +174,24 @@ public class SolverThreads implements Runnable {
                                             SudokuSolver.puzzle.getTile(i, j).setFilled();
                                             Board.needs_update = true;
                                             System.out.println("Filling in " + val + " into " + i + "," + j + " -- c3.2");
+                                            change_made = true;
                                         }
                                     }
                                 }
                             }
                         }
                     }
+                    break;
                 }
+            }
+            if(change_made) {
+                num_iterations_without_change = 0;
+            } else {
+                num_iterations_without_change++;
+            }
+            if(num_iterations_without_change > 100000) {
+                System.out.println("Unsolvable without backtracking.");
+                SudokuSolver.puzzle.setBacktracking(true);
             }
             SudokuSolver.puzzle.checkSolved();
         }
@@ -177,7 +207,7 @@ public class SolverThreads implements Runnable {
         return false;
     }
 
-    private void checkBox(int box) {
+    private boolean checkBox(int box) {
         int i_beg, i_end, j_beg, j_end;
         switch (box) {
             case 1 -> {
@@ -242,7 +272,7 @@ public class SolverThreads implements Runnable {
             }
         }
         // Sub-box checks
-
+        boolean change_made = false;
         // #1: Get possible values remaining in box
         ArrayList<Integer> possible_in_box = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
         for(int i = i_beg; i < i_end; i++) {
@@ -288,6 +318,7 @@ public class SolverThreads implements Runnable {
                             SudokuSolver.puzzle.getTile(i,j).setFilled();
                             Board.needs_update = true;
                             System.out.println("Filling in " + val + " into " + i + "," + j + " -- c2.1");
+                            change_made = true;
                         }
                     }
                 }
@@ -308,8 +339,10 @@ public class SolverThreads implements Runnable {
                     SudokuSolver.puzzle.getTile(i, j).setFilled();
                     Board.needs_update = true;
                     System.out.println("Filling in " + val + " into " + i + "," + j + " -- c2.2");
+                    change_made = true;
                 }
             }
         }
+        return change_made;
     }
 }
