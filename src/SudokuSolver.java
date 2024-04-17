@@ -1,3 +1,11 @@
+/**
+ * CPSC 222 Final Project
+ * Joshua Phang 230158207
+ * SudokuSolver.java
+ *
+ * Note: JavaFX Runtime components are required for running this program.
+ */
+
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -21,7 +29,7 @@ public class SudokuSolver extends Application{
 
     // Setting for choosing puzzle number (1-5)
     private int PUZZLE_NUM = 1;
-    private String PUZZLE_FILE = "puzzles/puzzle_" + PUZZLE_NUM + ".txt";
+    private String PUZZLE_FILE = "src/puzzles/puzzle_" + PUZZLE_NUM + ".txt";
 
     @Override
     public void start(Stage stage) {
@@ -149,7 +157,7 @@ public class SudokuSolver extends Application{
 
         puzzleSpinner.setOnMouseClicked(event -> {
             PUZZLE_NUM = (int) puzzleSpinner.getValue();
-            PUZZLE_FILE = "puzzles/puzzle_" + PUZZLE_NUM + ".txt";
+            PUZZLE_FILE = "src/puzzles/puzzle_" + PUZZLE_NUM + ".txt";
             puzzle.loadBoardFromFile(PUZZLE_FILE);
             puzzle.printBoard();
 
